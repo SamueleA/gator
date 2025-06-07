@@ -33,6 +33,8 @@ var cmds = commands{
 	handlers: map[string]func(*State, Command) error{
 		"login": loginHandler,
 		"register": registerHandler,
+		"reset": resetHandler,
+		"users": listHandler,
 	},
 }
 
@@ -134,6 +136,34 @@ func registerHandler(state *State, command Command) error {
 
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func resetHandler(state *State, command Command) error {
+	err := state.DbQueries.Reset(context.Background())
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func listHandler(state *State, command Command) error {
+	users, err := state.DbQueries.GetUsers(context.Background())
+
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		if user.Name == state.Config.CurrentUserName {
+			fmt.Printf("* %s (current) \n", user.Name)
+		} else {
+			fmt.Printf("* %s\n", user.Name)
+		}
 	}
 
 	return nil
