@@ -28,12 +28,10 @@ var cmds = commands{
 }
 
 func main() {
-	println("Hello, World!")
-	
 	gatorConfig, err := config.Read()
 	
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading config:%v\n", err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 
@@ -41,20 +39,33 @@ func main() {
 		Config: gatorConfig,
 	}
 
-	fmt.Println(gatorConfig)
+	args := os.Args[1:]
 
-	cmds.handlers["login"](&state, Command{
-		name: "login",
-		args: []string{"sam1"},
-	})
+	if len(args) == 0 {
+		fmt.Fprintf(os.Stderr, "No arguments provided\n")
+		os.Exit(1)
+	}
+
+	command := Command{
+		name: args[0],
+		args: args[1:],
+	}
+
+	err = cmds.run(&state, command)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
 }
+
 
 func loginHandler (state *State, command Command) error {
 	if len(command.args) == 0 {
-		return errors.New("error: no username entered") 
+		return errors.New("no username entered") 
 	}
 	if len(command.args) > 1 {
-		return errors.New("error: no the username cannot have spaces")
+		return errors.New("no the username cannot have spaces")
 	}
 
 	username := command.args[0]
@@ -65,7 +76,7 @@ func loginHandler (state *State, command Command) error {
 		return err
 	}
 
-	fmt.Println("username %s logged in!", username)
+	fmt.Printf("username %s logged in!\n", username)
 
 	return nil
 }

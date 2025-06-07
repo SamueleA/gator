@@ -44,9 +44,6 @@ func Read() (*Config, error) {
 		return nil, err
 	}
 
-	fmt.Printf("DBUrl: %s\n", gatorConfig.DBUrl)
-	fmt.Printf("CurrentUserName: %s\n", gatorConfig.CurrentUserName)
-
 	return &gatorConfig, err
 }
 
