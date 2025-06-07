@@ -1,0 +1,5 @@
+#!/bin/bash
+
+read -s -p "Enter your password: " password
+
+goose postgres -dir sql/schema "postgres://samuele:$password@localhost:5432/gator" $1
