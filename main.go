@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/samuelea/gator/internal/agg"
 	"github.com/samuelea/gator/internal/config"
 	"github.com/samuelea/gator/internal/database"
 
@@ -21,6 +22,7 @@ var cmds = config.Commands{
 		"register": registerHandler,
 		"reset": resetHandler,
 		"users": listHandler,
+		"agg": agg.AggHandler,
 	},
 }
 
