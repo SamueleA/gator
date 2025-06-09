@@ -15,22 +15,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type State struct {
-	Config *config.Config
-	DbQueries *database.Queries
-}
-
-type Command struct {
-	name string
-	args []string
-}
-
-type commands struct {
-	handlers map[string]func(*State, Command) error
-}
-
-var cmds = commands{
-	handlers: map[string]func(*State, Command) error{
+var cmds = config.Commands{
+	Handlers: map[string]func(*config.State, config.Command) error{
 		"login": loginHandler,
 		"register": registerHandler,
 		"reset": resetHandler,
@@ -54,7 +40,7 @@ func main() {
 
 	dbQueries := database.New(db)
 
-	state := State{
+	state := config.State{
 		Config: gatorConfig,
 		DbQueries: dbQueries,
 	}
@@ -66,12 +52,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	command := Command{
-		name: args[0],
-		args: args[1:],
+	command := config.Command{
+		Name: args[0],
+		Args: args[1:],
 	}
 
-	err = cmds.run(&state, command)
+	err = cmds.Run(&state, command)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
@@ -79,15 +65,15 @@ func main() {
 	}
 }
 
-func loginHandler (state *State, command Command) error {
-	if len(command.args) == 0 {
+func loginHandler (state *config.State, command config.Command) error {
+	if len(command.Args) == 0 {
 		return errors.New("no username entered") 
 	}
-	if len(command.args) > 1 {
+	if len(command.Args) > 1 {
 		return errors.New("no the username cannot have spaces")
 	}
 
-	username := command.args[0]
+	username := command.Args[0]
 
 	err := loginUser(state, username)
 
@@ -98,7 +84,7 @@ func loginHandler (state *State, command Command) error {
 	return nil
 }
 
-func loginUser(state *State, username string) error {
+func loginUser(state *config.State, username string) error {
 	_, err := state.DbQueries.GetUser(context.Background(), username)
 
 	if err != nil {
@@ -116,8 +102,8 @@ func loginUser(state *State, username string) error {
 	return nil
 } 
 
-func registerHandler(state *State, command Command) error {
-	if len(command.args) == 0 {
+func registerHandler(state *config.State, command config.Command) error {
+	if len(command.Args) == 0 {
 		return fmt.Errorf("no username provided")
 	}
 
@@ -125,14 +111,14 @@ func registerHandler(state *State, command Command) error {
 		ID: uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Name: command.args[0],
+		Name: command.Args[0],
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to create new user %s. user already exists", command.args[0])
+		return fmt.Errorf("failed to create new user %s. user already exists", command.Args[0])
 	}
 
-	err = loginUser(state, command.args[0])
+	err = loginUser(state, command.Args[0])
 
 	if err != nil {
 		return err
@@ -141,7 +127,7 @@ func registerHandler(state *State, command Command) error {
 	return nil
 }
 
-func resetHandler(state *State, command Command) error {
+func resetHandler(state *config.State, command config.Command) error {
 	err := state.DbQueries.Reset(context.Background())
 
 	if err != nil {
@@ -151,7 +137,7 @@ func resetHandler(state *State, command Command) error {
 	return nil
 }
 
-func listHandler(state *State, command Command) error {
+func listHandler(state *config.State, command config.Command) error {
 	users, err := state.DbQueries.GetUsers(context.Background())
 
 	if err != nil {
@@ -167,14 +153,4 @@ func listHandler(state *State, command Command) error {
 	}
 
 	return nil
-}
-
-func (cmds *commands) run(state *State, command Command) error {
-	handler, ok := cmds.handlers[command.name]
-
-	if !ok {
-		return fmt.Errorf("error: command %s not found", command.name)
-	}
-
-	return handler(state, command)
 }

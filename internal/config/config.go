@@ -4,7 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/samuelea/gator/internal/database"
 )
+
+type State struct {
+	Config *Config
+	DbQueries *database.Queries
+}
+
+type Command struct {
+	Name string
+	Args []string
+}
+
+type Commands struct {
+	Handlers map[string]func(*State, Command) error
+}
 
 type Config struct {
 	DBUrl string `json:"db_url"`
@@ -79,4 +95,14 @@ func write(c *Config) error {
 	}
 
 	return nil
+}
+
+func (c *Commands) Run(state *State, command Command) error {
+	handler, ok := c.Handlers[command.Name]
+
+	if !ok {
+		return fmt.Errorf("error: command %s not found", command.Name)
+	}
+
+	return handler(state, command)
 }
