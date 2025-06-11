@@ -23,6 +23,7 @@ var cmds = config.Commands{
 		"reset": resetHandler,
 		"users": listHandler,
 		"agg": agg.AggHandler,
+		"addfeed": agg.AddFeedHandler,
 	},
 }
 
