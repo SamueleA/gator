@@ -134,5 +134,18 @@ func cleanUpRSS(feed *RSSFeed) {
 	}
 }
 
+func FeedsHandler(state *config.State, command config.Command) error {
+	feedsAndUsers, err := state.DbQueries.FeedsAndUsers(context.Background())
 
-// func createFeed(ctx context.Context, db *sql.DB, feed *RSSFeed) error {}
+	if err != nil {
+		return nil
+	}
+	
+	for _, feed := range feedsAndUsers {
+		fmt.Printf("Feed: %v\n", feed.Name)
+		fmt.Printf("url: %v\n", feed.Url)
+		fmt.Printf("user: %v\n", feed.Name_2)
+	}
+
+	return nil
+}

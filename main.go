@@ -24,6 +24,7 @@ var cmds = config.Commands{
 		"users": listHandler,
 		"agg": agg.AggHandler,
 		"addfeed": agg.AddFeedHandler,
+		"feeds": agg.FeedsHandler,
 	},
 }
 

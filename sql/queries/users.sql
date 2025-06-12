@@ -13,3 +13,10 @@ SELECT * FROM users WHERE name=$1;
 
 -- name: GetUsers :many
 SELECT * FROM users;
+
+-- name: GetUserById :one
+SELECT * FROM users WHERE id=$1;
+
+-- name: FeedsAndUsers :many
+SELECT * FROM feeds
+INNER JOIN users ON users.id = feeds.user_id;
