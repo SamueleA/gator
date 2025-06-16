@@ -5,3 +5,6 @@ RETURNING *;
 
 -- name: GetFeeds :many
 SELECT * FROM feeds;
+
+-- name: FeedFromUrl :one
+SELECT * FROM feeds WHERE feed.url = $1;
