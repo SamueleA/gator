@@ -44,15 +44,9 @@ func AggHandler(state *config.State, command config.Command) error {
 	return nil
 }
 
-func AddFeedHandler(state *config.State, command config.Command) error {
+func AddFeedHandler(state *config.State, command config.Command, user database.User) error {
 	if len(command.Args) < 2 {
 		return fmt.Errorf("not enough arguments provided. name and url arguments are required")
-	}
-	
-	user, err := state.DbQueries.GetUser(context.Background(),  state.Config.CurrentUserName)
-
-	if err != nil {
-		return err
 	}
 
 	feedName := command.Args[0]
@@ -162,19 +156,13 @@ func FeedsHandler(state *config.State, command config.Command) error {
 	return nil
 }
 
-func FollowHandler(state *config.State, command config.Command) error {
+func FollowHandler(state *config.State, command config.Command, user database.User) error {
 	feedUrl := command.Args[0]
 
 	feed, err := state.DbQueries.FeedFromUrl(context.Background(), feedUrl)
 
 	if err != nil {
 		return err
-	}
-
-	user, err := state.DbQueries.GetUser(context.Background(), state.Config.CurrentUserName)
-
-	if err != nil {
-		return nil
 	}
 
 	feedFollow, err := state.DbQueries.CreateFeedFollow(
@@ -198,12 +186,7 @@ func FollowHandler(state *config.State, command config.Command) error {
 	return nil
 }
 
-func FollowingHandler(state *config.State, command config.Command) error {
-	user, err := state.DbQueries.GetUser(context.Background(), state.Config.CurrentUserName)
-	if err != nil {
-		return nil
-	}
-
+func FollowingHandler(state *config.State, command config.Command, user database.User) error {
 	followed_feeds, err := state.DbQueries.GetFeedFollowsForUser(context.Background(), user.ID)
 
 	if err != nil {

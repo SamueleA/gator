@@ -12,6 +12,7 @@ import (
 	"github.com/samuelea/gator/internal/agg"
 	"github.com/samuelea/gator/internal/config"
 	"github.com/samuelea/gator/internal/database"
+	"github.com/samuelea/gator/internal/middleware"
 
 	_ "github.com/lib/pq"
 )
@@ -23,10 +24,10 @@ var cmds = config.Commands{
 		"reset": resetHandler,
 		"users": listHandler,
 		"agg": agg.AggHandler,
-		"addfeed": agg.AddFeedHandler,
+		"addfeed": middleware.MiddlewareLoggedIn(agg.AddFeedHandler),
 		"feeds": agg.FeedsHandler,
-		"follow": agg.FollowHandler,
-		"following": agg.FollowingHandler,
+		"follow": middleware.MiddlewareLoggedIn(agg.FollowHandler),
+		"following": middleware.MiddlewareLoggedIn(agg.FollowingHandler),
 	},
 }
 
