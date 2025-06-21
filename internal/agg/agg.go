@@ -199,3 +199,26 @@ func FollowingHandler(state *config.State, command config.Command, user database
 
 	return nil
 }
+
+func UnfollowHandler(state *config.State, command config.Command, user database.User) error {
+	if len(command.Args) < 1 {
+		return fmt.Errorf("please specify rss url to unfollow")
+	}
+
+	feed, err := state.DbQueries.FeedFromUrl(context.Background(), command.Args[0])
+
+	if err != nil {
+		return err
+	}
+
+	err = state.DbQueries.DeleteFeedFollow(context.Background(), database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
