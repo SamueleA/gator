@@ -71,6 +71,18 @@ func AddFeedHandler(state *config.State, command config.Command) error {
 		return fmt.Errorf("failed to create feed entry: %w", err)
 	}
 
+	_, err = state.DbQueries.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		FeedID: feedEntry.ID,
+		UserID: user.ID,
+	}) 
+
+	if err != nil {
+		return nil
+	}
+
 	fmt.Println("Added new feed entry!")
 	fmt.Printf("ID: %v\n", feedEntry.ID)
 	fmt.Printf("CreatedAT: %v\n", feedEntry.CreatedAt)
@@ -145,6 +157,61 @@ func FeedsHandler(state *config.State, command config.Command) error {
 		fmt.Printf("Feed: %v\n", feed.Name)
 		fmt.Printf("url: %v\n", feed.Url)
 		fmt.Printf("user: %v\n", feed.Name_2)
+	}
+
+	return nil
+}
+
+func FollowHandler(state *config.State, command config.Command) error {
+	feedUrl := command.Args[0]
+
+	feed, err := state.DbQueries.FeedFromUrl(context.Background(), feedUrl)
+
+	if err != nil {
+		return err
+	}
+
+	user, err := state.DbQueries.GetUser(context.Background(), state.Config.CurrentUserName)
+
+	if err != nil {
+		return nil
+	}
+
+	feedFollow, err := state.DbQueries.CreateFeedFollow(
+		context.Background(),
+		database.CreateFeedFollowParams{
+			ID: uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			FeedID: feed.ID,
+			UserID: user.ID,
+		},
+	)
+
+	if err != nil {
+		return nil
+	}
+
+	fmt.Printf("New feed followed: %s\n", feedFollow.FeedName)
+	fmt.Printf("Followed by: %s\n", feedFollow.UserName)
+
+	return nil
+}
+
+func FollowingHandler(state *config.State, command config.Command) error {
+	user, err := state.DbQueries.GetUser(context.Background(), state.Config.CurrentUserName)
+	if err != nil {
+		return nil
+	}
+
+	followed_feeds, err := state.DbQueries.GetFeedFollowsForUser(context.Background(), user.ID)
+
+	if err != nil {
+		return nil
+	}
+	
+	for _, feed := range followed_feeds {
+		fmt.Printf("- %s\n", feed.FeedName)
 	}
 
 	return nil

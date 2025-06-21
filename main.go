@@ -25,6 +25,8 @@ var cmds = config.Commands{
 		"agg": agg.AggHandler,
 		"addfeed": agg.AddFeedHandler,
 		"feeds": agg.FeedsHandler,
+		"follow": agg.FollowHandler,
+		"following": agg.FollowingHandler,
 	},
 }
 
