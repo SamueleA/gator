@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -48,21 +49,22 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const feedsAndUsers = `-- name: FeedsAndUsers :many
-SELECT feeds.id, feeds.created_at, feeds.updated_at, feeds.name, url, user_id, users.id, users.created_at, users.updated_at, users.name FROM feeds
+SELECT feeds.id, feeds.created_at, feeds.updated_at, feeds.name, url, user_id, last_fetched_at, users.id, users.created_at, users.updated_at, users.name FROM feeds
 INNER JOIN users ON users.id = feeds.user_id
 `
 
 type FeedsAndUsersRow struct {
-	ID          uuid.UUID
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Name        string
-	Url         string
-	UserID      uuid.UUID
-	ID_2        uuid.UUID
-	CreatedAt_2 time.Time
-	UpdatedAt_2 time.Time
-	Name_2      string
+	ID            uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Name          string
+	Url           string
+	UserID        uuid.UUID
+	LastFetchedAt sql.NullTime
+	ID_2          uuid.UUID
+	CreatedAt_2   time.Time
+	UpdatedAt_2   time.Time
+	Name_2        string
 }
 
 func (q *Queries) FeedsAndUsers(ctx context.Context) ([]FeedsAndUsersRow, error) {
@@ -81,6 +83,7 @@ func (q *Queries) FeedsAndUsers(ctx context.Context) ([]FeedsAndUsersRow, error)
 			&i.Name,
 			&i.Url,
 			&i.UserID,
+			&i.LastFetchedAt,
 			&i.ID_2,
 			&i.CreatedAt_2,
 			&i.UpdatedAt_2,
