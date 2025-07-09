@@ -2,6 +2,7 @@ package agg
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
 	"fmt"
 	"html"
@@ -31,15 +32,11 @@ type RSSItem struct {
 }
 
 func AggHandler(state *config.State, command config.Command) error {
-	feedUrl := "https://www.wagslane.dev/index.xml"
-
-	feed, err := fetchFeed(context.Background(), feedUrl)
+	err := scrapeFeeds(state)
 
 	if err != nil {
 		return fmt.Errorf("failed to fetch feed: %w", err)
 	}
-
-	fmt.Println(feed)
 
 	return nil
 }
@@ -218,6 +215,42 @@ func UnfollowHandler(state *config.State, command config.Command, user database.
 
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func scrapeFeeds(state *config.State) error {
+	feed, err := state.DbQueries.GetNextFeedToFetch(context.Background())	
+
+	if err != nil {
+		return err
+	}
+
+	feedContent, err := fetchFeed(context.Background(), feed.Url)
+
+	if err != nil {
+		return nil
+	}
+
+	err = state.DbQueries.MarkFeedFetched(context.Background(), database.MarkFeedFetchedParams{
+		ID: feed.ID,
+		LastFetchedAt: sql.NullTime{Time: time.Now(), Valid: true},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Feed Update For %s\n", feedContent.Channel.Title)
+	fmt.Printf("Url: %s\n", feedContent.Channel.Link)
+
+	for i, item := range(feedContent.Channel.Item) {
+		fmt.Printf("Item #%v:\n", i)
+		fmt.Println(item.Title)
+		fmt.Println(item.PubDate)
+		fmt.Println(item.Link)
+		fmt.Println(item.Description)
 	}
 
 	return nil
