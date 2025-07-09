@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"html"
 	"io"
@@ -32,13 +33,31 @@ type RSSItem struct {
 }
 
 func AggHandler(state *config.State, command config.Command) error {
-	err := scrapeFeeds(state)
 
-	if err != nil {
-		return fmt.Errorf("failed to fetch feed: %w", err)
+	if len(command.Args) < 1 {
+		return errors.New("not enough arguments provided. specify time between updates. eg: 1s, 1m, 1h")
 	}
 
-	return nil
+	timeBetweenUpdates := command.Args[0]
+	duration, err := time.ParseDuration(timeBetweenUpdates)
+
+	
+	if err != nil {
+		return fmt.Errorf("invalid duration: %w", err)
+	}
+	
+	fmt.Println("Collecting feeds every", duration)
+	
+	ticker := time.NewTicker(duration)
+
+	defer ticker.Stop()
+
+	for ;; <-ticker.C {
+		err := scrapeFeeds(state)
+		if err != nil {
+			return fmt.Errorf("failed to fetch feed: %w", err)
+		}
+	}
 }
 
 func AddFeedHandler(state *config.State, command config.Command, user database.User) error {
