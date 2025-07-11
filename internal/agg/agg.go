@@ -271,7 +271,7 @@ func scrapeFeeds(state *config.State) error {
 			return fmt.Errorf("failed to parse publish date: %w", err)
 		}
 
-		_, err = state.DbQueries.CreatePost(context.Background(), database.CreatePostParams{
+		state.DbQueries.CreatePost(context.Background(), database.CreatePostParams{
 			ID: uuid.New(),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -282,9 +282,6 @@ func scrapeFeeds(state *config.State) error {
 			FeedID: feed.ID,
 		})
 
-		if err != nil {
-			return err
-		}
 
 		fmt.Printf("Item #%v:\n", i)
 		fmt.Println(item.Title)
