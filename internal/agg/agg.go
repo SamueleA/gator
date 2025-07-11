@@ -265,6 +265,27 @@ func scrapeFeeds(state *config.State) error {
 	fmt.Printf("Url: %s\n", feedContent.Channel.Link)
 
 	for i, item := range(feedContent.Channel.Item) {
+
+		publishedAt, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			return fmt.Errorf("failed to parse publish date: %w", err)
+		}
+
+		_, err = state.DbQueries.CreatePost(context.Background(), database.CreatePostParams{
+			ID: uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Title: item.Title,
+			Url: item.Link,
+			Description: item.Description,
+			PublishedAt: publishedAt,
+			FeedID: feed.ID,
+		})
+
+		if err != nil {
+			return err
+		}
+
 		fmt.Printf("Item #%v:\n", i)
 		fmt.Println(item.Title)
 		fmt.Println(item.PubDate)
