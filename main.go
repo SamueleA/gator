@@ -29,6 +29,7 @@ var cmds = config.Commands{
 		"follow": middleware.MiddlewareLoggedIn(agg.FollowHandler),
 		"following": middleware.MiddlewareLoggedIn(agg.FollowingHandler),
 		"unfollow": middleware.MiddlewareLoggedIn(agg.UnfollowHandler),
+		"browse": middleware.MiddlewareLoggedIn(agg.BrowseHandler),
 	},
 }
 

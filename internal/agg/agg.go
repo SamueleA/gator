@@ -9,6 +9,7 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -287,6 +288,37 @@ func scrapeFeeds(state *config.State) error {
 		fmt.Println(item.Title)
 		fmt.Println(item.PubDate)
 		fmt.Println(item.Link)
+		fmt.Println(item.Description)
+	}
+
+	return nil
+}
+
+
+func BrowseHandler(state *config.State, command config.Command, user database.User) error {
+	limit := 2
+	if len(command.Args) >= 1 {
+		parsedLimit, err := strconv.Atoi(command.Args[0])
+		if err == nil {
+			limit = parsedLimit
+		}
+	}
+
+	items, err := state.DbQueries.GetPostsByUser(context.Background(), database.GetPostsByUserParams{
+		UserID: user.ID,
+		Limit: int32(limit),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for i := range(len(items)) {
+		item := items[i]
+		fmt.Printf("Item #%v:\n", i)
+		fmt.Println(item.Title)
+		fmt.Println(item.PublishedAt)
+		fmt.Println(item.Url)
 		fmt.Println(item.Description)
 	}
 
